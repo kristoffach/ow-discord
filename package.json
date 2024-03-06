@@ -1,0 +1,11 @@
+{
+  "main": "app/main.js",
+  "scripts": {
+    "start": "node .",
+    "deploy": "node app/deploy.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5"
+  }
+}
