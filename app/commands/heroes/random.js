@@ -3,10 +3,10 @@ const { bold, italic, SlashCommandBuilder } = require('discord.js')
 const wait = require('node:timers/promises').setTimeout
 
 // Import strings used in response messages
-const greeting = require('../heroes/greeting.json')
-const damage = require('../heroes/damage.json')
-const support = require('../heroes/support.json')
-const tank = require('../heroes/tank.json')
+const greeting = require('./greeting.json')
+const damage = require('./damage.json')
+const support = require('./support.json')
+const tank = require('./tank.json')
 const flex = [...damage, ...support, ...tank]
 
 // Respond with message using random helper function
