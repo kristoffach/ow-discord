@@ -1,0 +1,60 @@
+// Import required modules
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionsBitField, SlashCommandBuilder, bold, inlineCode } = require('discord.js')
+const wait = require('node:timers/promises').setTimeout
+
+// Define the data of this command and optional options
+const data = new SlashCommandBuilder()
+  .setName('channel-clear')
+  .setDescription('Removes the latest 100 posts in this channel')
+
+// Define what happens when command executes
+async function execute(interaction) {
+  // Check if user has permission to delete messages
+  if (interaction.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
+    // Button constructor
+		const confirm = new ButtonBuilder().setCustomId('confirm').setLabel('Confirm Deletion').setStyle(ButtonStyle.Danger).setDisabled(true)
+		const cancel = new ButtonBuilder().setCustomId('cancel').setLabel('Cancel').setStyle(ButtonStyle.Secondary)
+    const row = new ActionRowBuilder().addComponents(confirm, cancel)
+
+    // Command response and update logic
+    const response = await interaction.reply({ content: `Are you sure you want to delete all messages in ${ inlineCode(interaction.channel.name) }? \n${ bold("This action cannot be undone") }`, components: [row], ephemeral: true })
+
+    // Enable confirm button after 5 seconds have passed, updates response component
+    setTimeout(()=>{
+      row.components[0].setDisabled(false), response.edit({components: [row]})
+    }, 5000)
+
+    // run code if user presses confirm button
+    try {
+      const collectorFilter = i => i.user.id === interaction.user.id
+      const confirmation = await response.awaitMessageComponent({ filter: collectorFilter, time: 30_000 })
+
+      // Update message
+      await interaction.editReply({ content: 'Deleting...', components: []})
+
+      // Attempt to delete messages that are <14 days old
+      try {
+        interaction.channel.bulkDelete(100, true)
+      } catch (err) {
+        await interaction.editReply({ content: `Something went wrong => ${err}`, components: []})
+      }
+
+      await interaction.editReply({ content: 'Deleted!', components: []})
+      await wait(2_000)
+      await interaction.deleteReply()
+    } catch (error) {
+      // User did not press confirm and deletion was canceled
+      await interaction.editReply({ content: 'Confirmation not received within 30 seconds, cancelling', components: [], ephemeral: true })
+      await wait(10_000)
+      await interaction.deleteReply()
+    }
+  } else {
+    // Missing permission
+    await interaction.reply({ content: "You don't have the required permissions to delete messages in this channel!", ephemeral: true })
+    await wait(10_000)
+    await interaction.deleteReply()
+  }
+}
+
+// Exports data and execute as an object
+module.exports = { data, execute }
