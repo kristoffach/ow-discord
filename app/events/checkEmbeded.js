@@ -10,9 +10,10 @@ const tank = require('../commands/heroes/tank.json')
 const flex = [...damage, ...support, ...tank]
 
 // Respond with message using random helper function
-const returnRandom = (arr) => arr[Math.floor(Math.random()*arr.length)]
 const msg = (role) => {
-  const response = italic(returnRandom(greeting)) + " "
+  const returnRandom = (arr) => arr[Math.floor(Math.random()*arr.length)]
+
+  const response = `${italic(returnRandom(greeting))} `
 
   switch (role) {
     case 'damage': return response + bold(returnRandom(damage))
@@ -27,8 +28,9 @@ async function execute(client) {
   const { embedChannel, embedMessage } = require('../config')
   const channel = client.channels.cache.get(embedChannel)
 
-  // Check if embeded message exists
   let message = undefined
+
+  // Check if embeded message exists
   try {
     message = await channel.messages.fetch(embedMessage)
   } catch (error) {
@@ -52,21 +54,25 @@ async function execute(client) {
     const flex = new ButtonBuilder().setCustomId('random-flex').setLabel('Flex').setStyle(ButtonStyle.Secondary)
 
     // Define row, include all buttons
-    const buttonRow = new ActionRowBuilder()
-      .addComponents(dps, tank, support, flex)
+    const buttonRow = new ActionRowBuilder().addComponents(tank, dps, support, flex)
 
+    // Send embeded message and buttons to channel
     const embeded = channel.send({
       embeds: [messageEmbed],
       components: [buttonRow],
     }).then(message => {
-      // Console log the new message id
+      // -----------------------------------------------------------------------------------------------------------------------------------------
+
+      // Console log the new message id, update env
       console.log(message.id)
+
+      // -----------------------------------------------------------------------------------------------------------------------------------------
     })
 
-    const collector = embeded.createMessageComponentCollector({
-      componentType: ComponentType.Button,
-    })
+    // Create a collector that listens for button presses
+    const collector = embeded.createMessageComponentCollector({ componentType: ComponentType.Button, })
 
+    // Listen for interactions
     collector.on('collect', async (interaction) => {
       const role = interaction.customId.split("-").pop()
 
@@ -77,10 +83,10 @@ async function execute(client) {
   }
 
   if (message) {
-    const collector = message.createMessageComponentCollector({
-      componentType: ComponentType.Button,
-    })
+    // Create a collector that listens for button presses
+    const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, })
 
+    // Listen for interactions
     collector.on('collect', async (interaction) => {
       const role = interaction.customId.split("-").pop()
 
