@@ -1,11 +1,14 @@
 {
   "main": "app/main.js",
   "scripts": {
-    "start": "node .",
+    "start": "nodemon app/main.js",
     "deploy": "node app/deploy.js"
   },
   "dependencies": {
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }
